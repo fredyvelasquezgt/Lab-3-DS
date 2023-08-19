@@ -1,0 +1,122 @@
+---
+title: "Analisis Exploratorio Ejercicio1"
+author: ""
+date: "2023-08-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ejercicio 1: Caracteres manuscritos
+
+```{r message=FALSE, warning=FALSE}
+
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+
+
+# Read the dataset
+db<-read.csv('train.csv')
+summary(db)
+
+
+
+```
+
+Como se observa en el resumen el dataset cuenta con `r ncol(db)` columnas y `r nrow(db)` filas donde la idea es la columna `r colnames(db[1])` es el dígito dibujado por el usuario. El resto de las columnas contienen los
+valores de cada píxel de la imagen asociada. Cada imagen tiene 28 píxeles de altura y 28 píxeles de ancho, para un total de 784 píxeles en total.
+Cada píxel tiene un único valor de píxel asociado, que indica la luminosidad u oscuridad de ese píxel,
+con números más altos que significan más oscuros. Este valor de píxel es un número entero entre 0
+y 255, inclusive
+
+### Analisis Exploratorio
+
+Para poder entrar en contexto con los datos primero veremos la cantidad de labels o digitos proporcionados, con la intencion de determinar que digito contiene mas pixeles
+
+```{R}
+table(db$label)
+
+ggplot(data = db) + geom_histogram(aes(x=label,fill=factor(label)),bins=10, position = "stack",alpha = 0.5)+theme(legend.position="none")+ scale_x_continuous(breaks = seq(0, 100, 1.))
+```
+
+\n Tras observar graficamente vemos que el numero 1 es el que mas filas tiene guardado datos, dando a entender que puede ser el numero mas dificil a predicir por ello es necesario tener mas filas con datos de este,y el siguiente numero es el 7, esto con la idea que estos numeros tienden a confundirse por ello fue necesario mas iteraciones de prueba para posterior almacenar su resultado en este dataset. 
+
+```{r}
+number1<- subset(db, label == 1)
+#Save all one's in new dataframe
+dt<-colSums(number1[,-1])
+
+
+dtF<-data.frame (pixel  = c(colnames(number1[,-1])),
+                  cantidad = c(dt)
+                  )
+
+dtF2 <- dtF[order(-dtF$cantidad),]
+dtF2<-head(dtF2,n=5)
+
+
+ggplot(data=dtF2, aes(x=reorder(pixel,cantidad),y=cantidad, fill=pixel)) +
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_text(aes(label=cantidad), vjust=1.6, color="black",
+            position = position_dodge(0.9), size=3.5)+
+  labs(title="Suma de valores de cada pixel para el numero 1 ")+
+  theme(legend.position="none")
+
+```
+
+\n Tal como se observa en la grafica anterior, se puede observar que el pixel numero 406 del numero 1 presenta mas cambios de color, o por otro lado es un pixel que en su mayoria esta pintado o tiene un valor del color.
+Analisis del pixel 406
+```{r}
+
+
+
+number1Group<-subset(db,db$label==1)
+summary(as.factor(number1Group$pixel406))
+
+```
+
+\n como se logra observar anteriormente el pixel 406 tiene mas cambios de color, demostrando que efectivamente este pixel si cambia mucho el color de su relleno.
+
+
+```{r}
+number7<- subset(db, label == 7)
+#Save all one's in new dataframe
+dt7<-colSums(number7[,-1])
+
+
+dtF7<-data.frame (pixel  = c(colnames(number7[,-1])),
+                  cantidad = c(dt7)
+                  )
+
+dtF27 <- dtF7[order(-dtF7$cantidad),]
+dtF27<-head(dtF27,n=5)
+
+
+ggplot(data=dtF27, aes(x=reorder(pixel,cantidad),y=cantidad, fill=pixel)) +
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_text(aes(label=cantidad), vjust=1.6, color="black",
+            position = position_dodge(0.9), size=3.5)+
+  labs(title="Suma de valores de cada pixel para el numero 7 ")+
+  theme(legend.position="none")
+
+```
+
+\n Tras obsevar los pixeles del numero 7 se observo que en este caso el pixel con mas color o mas datos es el pixel 269, indicando que a pesar que el numero 1 y 7 se parecen los pixeles con mas color son distintos. 
+
+Analisis del pixel 406
+```{r}
+
+
+
+number7Group<-subset(db,db$label==7)
+summary(as.factor(number7Group$pixel269))
+
+```
+
+\n como se logra observar anteriormente el pixel 269 tiene mas cambios de color, demostrando que efectivamente este pixel si cambia mucho el color de su relleno. De hecho, se observa que este pixel de este numero tiene mas cambios que el pixel 406 del numero 1.
+
+
+
